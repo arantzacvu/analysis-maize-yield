@@ -55,10 +55,6 @@ drop1(m2)
 
 #Since AIC of /none/ is the lowest, we stop reducing it, this meaning:
 # WE FOUND THE MINIMAL ADEQUATE MODEL:
-# m2 <- lmer( yield ~ pd + environment + genotype + pd:environment + environment:genotype + 
-#     (1 | pd:environment:block:rep), data = yield)
-
-#I think the problem with the m2 above is the order of the random effects 
 m2  <- lmer(yield ~ pd + environment + genotype + pd:environment + environment:genotype + (1 | environment:pd:block:rep), data = yield)
 # NOW WE TEST validity OF THE MODEL with the reduction
 
@@ -74,17 +70,61 @@ qqline(ranef(m2)[["environment:pd:block:rep"]][, 1], asp = 1)   # to add the lin
 # model fits even better than in the beginning 
 # ARE THERE EFFECTS??
 
-# Estimated marginal means for genotype
-#M131 x CML16 is one of the best performers = 7.41.
-emmeans(m2, ~ genotype)
-
-# Pairwise comparisons between genotypes
-
-pairs(emmeans(m2, ~ genotype))
-
 # Interaction comparisons (pd × environment)
+# Within each environment, what is the expected mean yield for each planting date, averaged over genotypes?
 emmeans(m2, ~ pd | environment)
+#Are those differences statistically meaningful within each environment?
 pairs(emmeans(m2, ~ pd | environment))
 
+" In Fumesua, yield differed significantly among all three plant densities
+(high > medium > low). In Legon_Mi, high density produced significantly higher
+yields than both medium and low densities, whereas the difference between medium 
+and low densities was not significant. A similar pattern was observed in Legon_off. 
+In Nyankpala, medium density yielded significantly more than low density, while no 
+significant differences were detected between high and medium or between high and low densities.
+"
+emmip(m2, pd ~ environment)
+
+
+# Interaction comparisons (genotype × environment)
 emmeans(m2, ~ genotype | environment)
 pairs(emmeans(m2, ~ genotype | environment))
+
+"Fumesua
+
+Genotype performance differed significantly in Fumesua. The highest yields were 
+observed for CML16 × 87036 and ENT11 × 87036, which formed the top statistical group. 
+Several other genotypes, including PAN53 and M131 x CML16, showed comparable performance 
+and did not differ significantly from the top group. Pairwise comparisons confirmed that high-performing 
+genotypes yielded significantly more than the lowest-yielding genotypes.
+
+Legon_Mi
+
+In Legon_Mi, significant differences among genotypes were also observed. Hybrids
+M131 x CML16 and TZdEI501 x ENT11 ranked among the highest yielding entries, whereas 
+TZEI1-based genotypes were among the lowest. However, differences among the 
+top-performing genotypes were generally not significant, indicating similar yield 
+potential within this group.
+
+
+Legon_off
+
+Genotype rankings in Legon_off followed a pattern similar to Legon_Mi, with 
+CML16-derived hybrids showing superior performance. Several genotypes formed a broad 
+high-yielding group, while TZEI1-based genotypes consistently produced lower yields.
+These results highlight moderate genotype differentiation within this environment.
+
+
+Nyankpala
+
+In Nyankpala, genotype performance differed markedly from the other environments. 
+Overall yields were lower, and genotype rankings changed substantially. Although 
+some genotypes maintained intermediate performance, no single genotype consistently 
+dominated. Pairwise comparisons indicated fewer significant differences among genotypes, 
+suggesting a stronger environmental constraint on yield expression.
+"
+emmip(m2, genotype ~ environment)
+ 
+
+
+
