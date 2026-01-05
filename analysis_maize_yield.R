@@ -101,7 +101,53 @@ emmeans(m2, ~ pd | environment)
 
 mult_comp_pd<- multcomp::cld(emmeans(m2, ~ pd | environment), Letters = letters, decreasing = TRUE, adjust = "tukey")
 print(mult_comp_pd)
+###
+library(lme4)
+library(emmeans)
+library(ggplot2)
+library(readr)
 
+setwd("C:/Users/jayes/Downloads")
+yield <- read_csv("project_data(yield).csv")
+
+
+# Ensure factors
+yield$environment <- factor(yield$environment)
+yield$pd          <- factor(yield$pd)
+yield$genotype    <- factor(yield$genotype)
+yield$rep         <- factor(yield$rep)
+yield$block       <- factor(yield$block)
+
+m2 <- lmer(
+  yield ~ pd + environment + genotype +
+    pd:environment + environment:genotype +
+    (1 | environment:pd:rep:block),
+  data = yield
+)
+
+##Plant density × Environment interaction
+## (Does the effect of plant density change across environments)
+
+#Yield is lowest at low density across environments, with environment-specific response magnitudes.
+colnames(emm_pd_env_df)
+p1 <- ggplot(emm_pd_env_df,
+             aes(x = pd,
+                 y = emmean,
+                 group = environment,
+                 colour = environment)) +
+  geom_line(size = 1) +
+  geom_point(size = 2) +
+  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL),
+                width = 0.1) +
+  labs(
+    x = "Plant density",
+    y = "Predicted mean yield",
+    colour = "Environment"
+  ) +
+  theme_minimal()
+
+)
+p1
 
 " 
 Fumesua   high > medium > low
@@ -132,6 +178,78 @@ with high density not differing significantly with low density, that led to the 
 #pairs(emmeans(m2, ~ genotype | environment))
 mult_comp_gen<- multcomp::cld(emmeans(m2, ~ genotype | environment), Letters = letters, decreasing = TRUE, adjust = "tukey")
 print(mult_comp_gen)
+
+library(lme4)
+library(emmeans)
+library(multcomp)
+library(dplyr)
+library(ggplot2)
+library(tidytext)
+
+# Estimated marginal means
+emm_gen_env <- emmeans(m2, ~ genotype | environment)
+
+# CLD (a = highest group)
+cld_gen_env <- cld(
+  emm_gen_env,
+  by = "environment",
+  adjust = "sidak",
+  Letters = letters,
+  decreasing = TRUE
+)
+
+cld_df <- as.data.frame(cld_gen_env)
+cld_df$.group <- gsub(" ", "", cld_df$.group)
+
+# Reorder genotypes within environment
+cld_df <- cld_df %>%
+  mutate(
+    genotype_reordered = reorder_within(genotype, emmean, environment)
+  )
+
+# -------------------------------
+# Function to plot ONE environment
+# -------------------------------
+plot_env <- function(env_name) {
+  
+  df_env <- cld_df %>%
+    filter(environment == env_name)
+  
+  ggplot(
+    df_env,
+    aes(x = emmean, y = genotype_reordered)
+  ) +
+    geom_point(size = 2) +
+    geom_errorbar(
+      aes(xmin = asymp.LCL, xmax = asymp.UCL),
+      width = 0.2
+    ) +
+    geom_text(
+      aes(x = asymp.UCL + 0.25, label = .group),
+      size = 3
+    ) +
+    scale_y_reordered() +
+    labs(
+      title = env_name,
+      x = "Predicted mean yield",
+      y = "Genotype"
+    ) +
+    theme_minimal()
+}
+
+# ===============================
+# Generate plots (one by one)
+# ===============================
+p_fumesua    <- plot_env("Fumesua")
+p_legon_mi   <- plot_env("Legon_Mi")
+p_legon_off  <- plot_env("Legon_off")
+p_nyankpala  <- plot_env("Nyankpala")
+
+# Print 
+p_fumesua
+p_legon_mi
+p_legon_off
+p_nyankpala
 "Fumesua
 
 Genotype performance differed significantly in Fumesua. The highest yields were 
@@ -165,6 +283,7 @@ some genotypes maintained intermediate performance, no single genotype consisten
 dominated. Pairwise comparisons indicated fewer significant differences among genotypes, 
 suggesting a stronger environmental constraint on yield expression.
 "
+
 
 
 
