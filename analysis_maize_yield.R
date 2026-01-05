@@ -102,6 +102,14 @@ yields than both medium and low densities, whereas the difference between medium
 and low densities was not significant. A similar pattern was observed in Legon_off. 
 In Nyankpala, medium density yielded significantly more than low density, while no 
 significant differences were detected between high and medium or between high and low densities.
+Fumesua   high > medium > low
+Legon_mi   high>medium>low
+legon_off    high>medium>low
+nyankpala   medium>high>low
+
+
+
+
 "
 emmip(m2, pd ~ environment)
 
@@ -147,4 +155,5 @@ suggesting a stronger environmental constraint on yield expression.
 "
 emmip(m2, genotype ~ environment)
  
+
 
