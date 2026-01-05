@@ -3,7 +3,12 @@ library(lme4)
 library(readxl)
 library(MASS)
 library(emmeans)
-
+library(ggplot2)
+library(readr)
+library(multcomp)
+library(dplyr)
+library(ggplot2)
+library(tidytext)
 
 yield <- read.delim("dataM.txt")
 yield$pd <- factor(yield$pd)
@@ -102,14 +107,6 @@ emmeans(m2, ~ pd | environment)
 mult_comp_pd<- multcomp::cld(emmeans(m2, ~ pd | environment), Letters = letters, decreasing = TRUE, adjust = "tukey")
 print(mult_comp_pd)
 ###
-library(lme4)
-library(emmeans)
-library(ggplot2)
-library(readr)
-
-setwd("C:/Users/jayes/Downloads")
-yield <- read_csv("project_data(yield).csv")
-
 
 # Ensure factors
 yield$environment <- factor(yield$environment)
@@ -179,12 +176,7 @@ with high density not differing significantly with low density, that led to the 
 mult_comp_gen<- multcomp::cld(emmeans(m2, ~ genotype | environment), Letters = letters, decreasing = TRUE, adjust = "tukey")
 print(mult_comp_gen)
 
-library(lme4)
-library(emmeans)
-library(multcomp)
-library(dplyr)
-library(ggplot2)
-library(tidytext)
+
 
 # Estimated marginal means
 emm_gen_env <- emmeans(m2, ~ genotype | environment)
@@ -283,6 +275,7 @@ some genotypes maintained intermediate performance, no single genotype consisten
 dominated. Pairwise comparisons indicated fewer significant differences among genotypes, 
 suggesting a stronger environmental constraint on yield expression.
 "
+
 
 
 
