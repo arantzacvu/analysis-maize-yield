@@ -1,4 +1,4 @@
-install.packages("readxl")  
+ 
 library(LabApplStat)
 library(lme4)
 library(readxl)
@@ -6,7 +6,7 @@ library(MASS)
 library(emmeans)
 
 
-yield <- read_excel("yield.xlsx")
+yield <- read.delim("dataM.txt")
 summary (yield)
 str(yield)
 
@@ -147,3 +147,4 @@ suggesting a stronger environmental constraint on yield expression.
 "
 emmip(m2, genotype ~ environment)
  
+
