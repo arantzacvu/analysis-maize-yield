@@ -1,5 +1,4 @@
- 
-library(LabApplStat)
+ library(LabApplStat)
 library(lme4)
 library(readxl)
 library(MASS)
@@ -7,8 +6,14 @@ library(emmeans)
 
 
 yield <- read.delim("dataM.txt")
+yield$pd <- factor(yield$pd)
+yield$environment <- factor(yield$environment)
+yield$genotype <- factor(yield$genotype)
+yield$block <- factor(yield$block)
+yield$rep <- factor(yield$rep)
 summary (yield)
 str(yield)
+
 
 plot(DD(yield~ pd * environment * genotype, random=~environment:pd: block: rep,data=yield),"MSS")
 #plot(DD(yield~ pd * environment * genotype, random=~environment:pd: block: rep,data=yield))
@@ -88,38 +93,45 @@ qqline(ranef(m2)[["environment:pd:block:rep"]][, 1], asp = 1)   # to add the lin
 
 # Interaction comparisons (pd × environment)
 # Which is the best plant density for each environment to obtain the highest yield? 
-#emmeans(m2, ~ pd | environment)
+emmeans(m2, ~ pd | environment)
 #Are those differences statistically meaningful within each environment?
 # (to do) get the letters to see if they are different based on p-values
 #pairs(emmeans(m2, ~ pd | environment))
 #mult_comp<- multcomp::cld(emmeans, Letters = letters, adjust = "tukey")
-mult_comp<- multcomp::cld(pairs(emmeans(m2, ~ pd | environment)), Letters = letters, adjust = "tukey")
-print(mult_comp)
 
-" In Fumesua, yield differed significantly among all three plant densities
-(high > medium > low). In Legon_Mi, high density produced significantly higher
-yields than both medium and low densities, whereas the difference between medium 
-and low densities was not significant. A similar pattern was observed in Legon_off. 
-In Nyankpala, medium density yielded significantly more than low density, while no 
-significant differences were detected between high and medium or between high and low densities.
+mult_comp_pd<- multcomp::cld(emmeans(m2, ~ pd | environment), Letters = letters, decreasing = TRUE, adjust = "tukey")
+print(mult_comp_pd)
+
+
+" 
 Fumesua   high > medium > low
 Legon_mi   high>medium>low
 legon_off    high>medium>low
 nyankpala   medium>high>low
 
+In Fumesua, yield differed significantly among all three plant densities
+(high > medium > low) [explain parenthesis in words].
 
+In Legon_Mi, (sample:high>medium>low) The high plant density produced the highest yield.
+Medium and low densities did not differ significantly from each other and both were
+significantly lower than high density.
 
+A similar pattern was observed in Legon_off, (sample:high>medium>low)
+where the yield across the different plant densities was the highest in the high plantdensity,
+while medium and low densities did not differ significantly from each other and both led to the lowest yield.
 
+In Nyankpala, The highest yields were obtained with medium and high density, 
+with high density not differing significantly with low density, that led to the lowest yield.
 "
-emmip(m2, pd ~ environment)
+
 
 
 # Interaction comparisons (genotype × environment)
 #Which are the best genotypes for each environment to obtain the highest yield?
 #emmeans(m2, ~ genotype | environment)
 #pairs(emmeans(m2, ~ genotype | environment))
-mult_comp<- multcomp::cld(pairs(emmeans(m2, ~ genotype | environment)), Letters = letters, adjust = "tukey")
-print(mult_comp)
+mult_comp_gen<- multcomp::cld(emmeans(m2, ~ genotype | environment), Letters = letters, decreasing = TRUE, adjust = "tukey")
+print(mult_comp_gen)
 "Fumesua
 
 Genotype performance differed significantly in Fumesua. The highest yields were 
@@ -153,7 +165,7 @@ some genotypes maintained intermediate performance, no single genotype consisten
 dominated. Pairwise comparisons indicated fewer significant differences among genotypes, 
 suggesting a stronger environmental constraint on yield expression.
 "
-emmip(m2, genotype ~ environment)
- 
+
+
 
 
