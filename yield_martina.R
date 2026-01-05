@@ -20,6 +20,14 @@ qqline(residuals(m0))   # to add the line
 qqnorm(ranef(m0)[["pd:environment:block:rep"]][, 1], asp = 1)
 qqline(ranef(m0)[["pd:environment:block:rep"]][, 1], asp = 1)   # to add the line
 
+#since plot is a bit questionable check that residuals are normally distributed with Shapiro test
+# p-value of 3.221*10^-7 so residuals are not normally distributed which would mean we could do a Box-Cox transformation??
+shapiro.test(residuals(m0)) 
+#based on the result of the boxcox, I think it is very close to 1, so idk if it would be good to do the transformation
+boxcox(lm(yield ~ pd * environment * genotype,data=yield),lambda = seq(-3,2,0.1))
+#WHAT IF WE USE LOG TRANFORMATION, WOULD IT BE SIMPLER?
+
+
 """
 our disrtibution looks good, no apparent outliers and no special trends or 
 patterns followed by the observations. QQ plot looks almost perfect for residuals, but a bit
