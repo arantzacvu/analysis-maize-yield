@@ -115,12 +115,8 @@ yield$genotype    <- factor(yield$genotype)
 yield$rep         <- factor(yield$rep)
 yield$block       <- factor(yield$block)
 
-m2 <- lmer(
-  yield ~ pd + environment + genotype +
-    pd:environment + environment:genotype +
-    (1 | environment:pd:rep:block),
-  data = yield
-)
+m2 <- lmer(yield ~ pd + environment + genotype + pd:environment + environment:genotype + 
+           (1 | environment:pd:rep:block), data = yield)
 
 ##Plant density × Environment interaction
 ## (Does the effect of plant density change across environments)
@@ -275,6 +271,7 @@ some genotypes maintained intermediate performance, no single genotype consisten
 dominated. Pairwise comparisons indicated fewer significant differences among genotypes, 
 suggesting a stronger environmental constraint on yield expression.
 "
+
 
 
 
