@@ -170,7 +170,7 @@ suggesting a stronger environmental constraint on yield expression.
 
 TO EXPORT GRAPHS AS PNG
 
-png("C:/Users/Martina/Documents/TESIS/Resultados/RMyL/COS, COP y COA.LC/RMyL_COS_LC_original.png",
+png("C:/Users/Martina/Documents/TESIS/Resultados/RMyL/COS, COP y COA.LC/RMyL_COS_LC_original.png",          # to open
     width = 11, height = 11, units = "cm", res=100)
 par(mar=c(5,5,4,2))
 plot(COSob ~ COSest_otono, 
@@ -182,7 +182,7 @@ curve(18.2229 + 0.7412*x, add=TRUE,lwd=2, xlim=c(70.9,89.1))
 curve(0 + x, add =TRUE, lwd=2, lty=3)
 text(x=71, y=91, expression(hat(y)== " 18,22 + 0,74x"))
 text(x=71, y=86.5, expression(paste("R"^2, "= 0,34")))
-dev.off()
+dev.off()                                                                                                    # to close
 """
 
 
