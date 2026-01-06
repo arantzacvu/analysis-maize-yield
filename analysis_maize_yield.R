@@ -1,4 +1,4 @@
- library(LabApplStat)
+library(LabApplStat)
 library(lme4)
 library(readxl)
 library(MASS)
@@ -275,6 +275,7 @@ some genotypes maintained intermediate performance, no single genotype consisten
 dominated. Pairwise comparisons indicated fewer significant differences among genotypes, 
 suggesting a stronger environmental constraint on yield expression.
 "
+
 
 
 
