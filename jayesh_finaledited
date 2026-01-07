@@ -112,13 +112,15 @@ print(mult_comp_pd)
 
 
 
-# MARTINA m2 <- lmer(yield ~ pd + environment + genotype + pd:environment + environment:genotype + 
+m2 <- lmer(yield ~ pd + environment + genotype + pd:environment + environment:genotype + 
             (1 | environment:pd:rep:block), data = yield)
 
 ##Plant density × Environment interaction
 ## (Does the effect of plant density change across environments)
 
 #Yield is lowest at low density across environments, with environment-specific response magnitudes.
+emm_pd_env <- emmeans(m2, ~ pd | environment)
+
 cld_pd_env <- cld( emm_pd_env,by = "environment",adjust = "sidak", Letters = letters,
                    decreasing = TRUE)
 
@@ -260,3 +262,5 @@ some genotypes maintained intermediate performance, no single genotype consisten
 dominated. Pairwise comparisons indicated fewer significant differences among genotypes, 
 suggesting a stronger environmental constraint on yield expression.
 "
+
+
