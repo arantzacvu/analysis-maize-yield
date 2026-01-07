@@ -112,7 +112,7 @@ print(mult_comp_pd)
 
 
 
-m2 <- lmer(yield ~ pd + environment + genotype + pd:environment + environment:genotype + 
+# MARTINA m2 <- lmer(yield ~ pd + environment + genotype + pd:environment + environment:genotype + 
             (1 | environment:pd:rep:block), data = yield)
 
 ##Plant density × Environment interaction
