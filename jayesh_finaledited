@@ -7,7 +7,6 @@ library(ggplot2)
 library(readr)
 library(multcomp)
 library(dplyr)
-library(ggplot2)
 library(tidytext)
 
 yield <- read.delim("dataM.txt")
