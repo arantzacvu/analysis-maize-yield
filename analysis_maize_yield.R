@@ -7,11 +7,12 @@ library(ggplot2)
 library(readr)
 library(multcomp)
 library(dplyr)
-library(ggplot2)
 library(tidytext)
 
 yield <- read.delim("dataM.txt")
-yield$pd <- factor(yield$pd)
+names(yield) <- tolower(names(yield))
+
+yield$pd <- factor(yield$pd, levels = c("Low", "Medium", "High"))
 yield$environment <- factor(yield$environment)
 yield$genotype <- factor(yield$genotype)
 yield$block <- factor(yield$block)
@@ -52,8 +53,6 @@ after running a few we can decide wether ours looks appropriate or not
 
 
 """
-
-
 our disrtibution looks good, no apparent outliers and no special trends or 
 patterns followed by the observations. QQ plot looks almost perfect for residuals, but a bit
 questionable for random effects
@@ -108,39 +107,49 @@ mult_comp_pd<- multcomp::cld(emmeans(m2, ~ pd | environment), Letters = letters,
 print(mult_comp_pd)
 ###
 
-# Ensure factors
-yield$environment <- factor(yield$environment)
-yield$pd          <- factor(yield$pd)
-yield$genotype    <- factor(yield$genotype)
-yield$rep         <- factor(yield$rep)
-yield$block       <- factor(yield$block)
 
+#what is this?? 
 m2 <- lmer(yield ~ pd + environment + genotype + pd:environment + environment:genotype + 
-           (1 | environment:pd:rep:block), data = yield)
+             (1 | environment:pd:rep:block), data = yield)
 
 ##Plant density × Environment interaction
 ## (Does the effect of plant density change across environments)
 
 #Yield is lowest at low density across environments, with environment-specific response magnitudes.
-colnames(emm_pd_env_df)
-p1 <- ggplot(emm_pd_env_df,
-             aes(x = pd,
-                 y = emmean,
-                 group = environment,
-                 colour = environment)) +
-  geom_line(size = 1) +
+emm_pd_env <- emmeans(m2, ~ pd | environment)
+
+cld_pd_env <- cld( emm_pd_env,by = "environment",adjust = "sidak", Letters = letters,
+                   decreasing = TRUE)
+
+cld_df <- as.data.frame(cld_pd_env)
+names(cld_df) <- tolower(names(cld_df))
+cld_df$.group <- gsub(" ", "", cld_df$.group)
+cld_df$pd <- factor(cld_df$pd, levels = c("Low", "Medium", "High"))
+
+p_pd_env_faceted <- ggplot(
+  cld_df,
+  aes(x = pd, y = emmean)
+) +
+  geom_line(group = 1, size = 1) +
   geom_point(size = 2) +
-  geom_errorbar(aes(ymin = asymp.LCL, ymax = asymp.UCL),
-                width = 0.1) +
+  geom_errorbar(
+    aes(ymin = lower.cl, ymax = upper.cl),
+    width = 0.1
+  ) +
+  geom_text(
+    aes(label = .group),
+    vjust = -0.8,
+    nudge_x = -0.15,
+    size = 4
+  ) +
+  facet_wrap(~ environment, nrow = 2) +
   labs(
     x = "Plant density",
-    y = "Predicted mean yield",
-    colour = "Environment"
+    y = "Predicted mean yield"
   ) +
   theme_minimal()
 
-)
-p1
+p_pd_env_faceted
 
 " 
 Fumesua   high > medium > low
@@ -178,42 +187,27 @@ print(mult_comp_gen)
 emm_gen_env <- emmeans(m2, ~ genotype | environment)
 
 # CLD (a = highest group)
-cld_gen_env <- cld(
-  emm_gen_env,
-  by = "environment",
-  adjust = "sidak",
-  Letters = letters,
-  decreasing = TRUE
-)
+cld_gen_env <- cld(emm_gen_env,by = "environment",adjust = "sidak",Letters = letters,
+                   decreasing = TRUE)
 
 cld_df <- as.data.frame(cld_gen_env)
 cld_df$.group <- gsub(" ", "", cld_df$.group)
 
 # Reorder genotypes within environment
-cld_df <- cld_df %>%
-  mutate(
-    genotype_reordered = reorder_within(genotype, emmean, environment)
-  )
+cld_df <- cld_df %>% mutate(genotype_reordered = reorder_within(genotype, emmean, environment))
 
-# -------------------------------
-# Function to plot ONE environment
-# -------------------------------
 plot_env <- function(env_name) {
-  
   df_env <- cld_df %>%
     filter(environment == env_name)
   
-  ggplot(
-    df_env,
-    aes(x = emmean, y = genotype_reordered)
-  ) +
+  ggplot(df_env, aes(x = emmean, y = genotype_reordered)) +
     geom_point(size = 2) +
     geom_errorbar(
-      aes(xmin = asymp.LCL, xmax = asymp.UCL),
+      aes(xmin = lower.CL, xmax = upper.CL),
       width = 0.2
     ) +
     geom_text(
-      aes(x = asymp.UCL + 0.25, label = .group),
+      aes(x = upper.CL + 0.25, label = .group),
       size = 3
     ) +
     scale_y_reordered() +
@@ -225,52 +219,49 @@ plot_env <- function(env_name) {
     theme_minimal()
 }
 
-# ===============================
-# Generate plots (one by one)
-# ===============================
-p_fumesua    <- plot_env("Fumesua")
+p_fumesua    <- plot_env("Fumesua") 
 p_legon_mi   <- plot_env("Legon_Mi")
 p_legon_off  <- plot_env("Legon_off")
 p_nyankpala  <- plot_env("Nyankpala")
 
-# Print 
 p_fumesua
 p_legon_mi
 p_legon_off
 p_nyankpala
-"Fumesua
+
+"""
+Fumesua
 
 Genotype performance differed significantly in Fumesua. The highest yields were 
-observed for CML16 × 87036 and ENT11 × 87036, which formed the top statistical group. 
-Several other genotypes, including PAN53 and M131 x CML16, showed comparable performance 
-and did not differ significantly from the top group. Pairwise comparisons confirmed that high-performing 
-genotypes yielded significantly more than the lowest-yielding genotypes.
+observed for CML16 × 87036, ENT11 × 87036, TZEI1 X 87036, M131 X CML16, CML16 X 1368, PAN53, 1368 X 
+87036, TZMI740 X CML16, M131 X TZdEI501, CML16 X ENT11, CML16 x TZEI7, M131 x 1368, TZdEI501 x CML16, 
+with no significant differences amongst them.(showed comparable performance 
+and did not differ significantly from the top group -- ask Jonas)
+
 
 Legon_Mi
 
 In Legon_Mi, significant differences among genotypes were also observed. Hybrids
-M131 x CML16 and TZdEI501 x ENT11 ranked among the highest yielding entries, whereas 
-TZEI1-based genotypes were among the lowest. However, differences among the 
-top-performing genotypes were generally not significant, indicating similar yield 
-potential within this group.
+M131 x CML16, TZdEI501 x ENT11, CML16 x ENT11, ENT11 × 87036, and CML16 x 87036 
+led to the highest yields.
 
 
 Legon_off
 
-Genotype rankings in Legon_off followed a pattern similar to Legon_Mi, with 
-CML16-derived hybrids showing superior performance. Several genotypes formed a broad 
-high-yielding group, while TZEI1-based genotypes consistently produced lower yields.
-These results highlight moderate genotype differentiation within this environment.
+The genotype with the highest yield in Legon_off was CML16 × 87036. Moreover,
+other hybrids such as: CML16-derived hybrids (except for TZdEI501 x CML16),
+M131 × ENT11, TZdEI525 × M131, TZEI1 × 87036, TZdEI501 × ENT11, M131 × 1368,
+TZdEI501 × 87036, ENT11 × TZEI1, TZEI387 × 87036, M131 × TZEI, M131 × TZEI387, 
+ENT11 × TZEI7, TZM740 × ENT11 did not differed statistically from the top genotype. 
 
 
 Nyankpala
+PAN53 was the genotype that gave the highest yield; however, TZdEI501 × CML16,
+ENT11 × TZEI7, TZEI387 × 87036, M131 × TZEI387, TZEI7 × 87036, TZdEI501 × ENT11, 
+CML16 × TZEI387, TZdEI501 × 87036, CML16 × TZEI1, M131 × TZEI7, CML16 × ENT11, and
+TZM740 × M131 were not significantly different from PAN53.
 
-In Nyankpala, genotype performance differed markedly from the other environments. 
-Overall yields were lower, and genotype rankings changed substantially. Although 
-some genotypes maintained intermediate performance, no single genotype consistently 
-dominated. Pairwise comparisons indicated fewer significant differences among genotypes, 
-suggesting a stronger environmental constraint on yield expression.
-"
+"""
 
 
 
