@@ -23,7 +23,7 @@ str(yield)
 
 plot(DD(yield~ pd * environment * genotype, random=~environment:pd: block: rep,data=yield),"MSS")
 #plot(DD(yield~ pd * environment * genotype, random=~environment:pd: block: rep,data=yield))
-m0 <- lmer(yield ~ pd * environment * genotype + (1|environment:pd:block:rep), data = yield)
+m0 <- lmer(yield ~ pd * environment * genotype + (1|environment:pd:block:rep) + (1|environment:rep), data = yield)
 #see which variables have effects 
 #environment:pd:block:rep
 names(ranef(m0))
@@ -262,6 +262,7 @@ CML16 × TZEI387, TZdEI501 × 87036, CML16 × TZEI1, M131 × TZEI7, CML16 × ENT
 TZM740 × M131 were not significantly different from PAN53.
 
 """
+
 
 
 
