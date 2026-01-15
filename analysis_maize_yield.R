@@ -105,12 +105,7 @@ emmeans(m2, ~ pd | environment)
 
 mult_comp_pd<- multcomp::cld(emmeans(m2, ~ pd | environment), Letters = letters, decreasing = TRUE, adjust = "tukey")
 print(mult_comp_pd)
-###
 
-
-#what is this?? 
-m2 <- lmer(yield ~ pd + environment + genotype + pd:environment + environment:genotype + 
-             (1 | environment:pd:rep:block), data = yield)
 
 ##Plant density × Environment interaction
 ## (Does the effect of plant density change across environments)
@@ -262,6 +257,7 @@ CML16 × TZEI387, TZdEI501 × 87036, CML16 × TZEI1, M131 × TZEI7, CML16 × ENT
 TZM740 × M131 were not significantly different from PAN53.
 
 """
+
 
 
 
